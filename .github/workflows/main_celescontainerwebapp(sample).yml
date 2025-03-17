@@ -34,7 +34,11 @@ jobs:
       - name: Build Angular App
         run: |
           cd public
+          rm -rf node_modules package-lock.json  # Remove old dependencies
+          npm cache clean --force                # Clear npm cache
+          npm ci                                 # Install fresh dependencies
           NODE_OPTIONS="--max-old-space-size=4096" npx ng build
+          
       # Install Composer Dependencies for CakePHP
       - name: Install PHP dependencies if composer.json exists
         run: |
