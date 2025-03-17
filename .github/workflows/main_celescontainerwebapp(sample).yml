@@ -9,8 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
 
     steps:
       - name: Checkout Repository
@@ -35,7 +33,7 @@ jobs:
       - name: Build Angular App
         run: |
           cd public
-          npm run build 
+          npx ng build --configuration=production
 
       # Install Composer Dependencies for CakePHP
       - name: Install PHP dependencies if composer.json exists
@@ -58,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     environment:
-      name: 'sample'
+      name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     
     steps:
