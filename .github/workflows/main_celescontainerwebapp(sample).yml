@@ -34,8 +34,7 @@ jobs:
       - name: Build Angular App
         run: |
           cd public
-          npx  node --max-old-space-size=4096 node_modules/.bin/ng build
-
+          node --max-old-space-size=4096 $(npm bin)/ng build
       # Install Composer Dependencies for CakePHP
       - name: Install PHP dependencies if composer.json exists
         run: |
