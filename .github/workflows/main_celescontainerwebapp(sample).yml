@@ -23,22 +23,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'public/package-lock.json'
 
       # Install and Build Angular Frontend
       - name: Install Angular dependencies
         run: |
           cd public
           npm install -g @angular/cli
+          if [ ! -f package-lock.json ]; then npm install --package-lock-only; fi  # Ensure package-lock.json exists
           npm install
 
       - name: Build Angular App
         run: |
           cd public
-          rm -rf node_modules package-lock.json  # Remove old dependencies
-          npm cache clean --force                # Clear npm cache
-          npm ci                                 # Install fresh dependencies
-          NODE_OPTIONS="--max-old-space-size=4096" npx ng build
-          
+          NODE_OPTIONS="--max-old-space-size=4096" npx ng build --configuration=sample
+
       # Install Composer Dependencies for CakePHP
       - name: Install PHP dependencies if composer.json exists
         run: |
@@ -62,7 +62,7 @@ jobs:
     environment:
       name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    
+
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
