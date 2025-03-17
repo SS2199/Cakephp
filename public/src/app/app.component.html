@@ -1,0 +1,40 @@
+<div class="container">
+  <h2>Task Manager</h2>
+
+  <form (submit)="onSubmit()" class="task-form">
+    <input 
+      type="text" 
+      [(ngModel)]="task.title" 
+      name="title" 
+      placeholder="Title" 
+      required 
+    />
+    <textarea 
+      [(ngModel)]="task.description" 
+      name="description" 
+      placeholder="Description" 
+      required
+    ></textarea>
+    <button type="submit">{{ isEditing ? 'Update' : 'Add' }} Task</button>
+  </form>
+  
+
+  <!-- Task List -->
+  <ul *ngIf="tasks.length > 0; else noTasks" class="task-list">
+    <li *ngFor="let task of tasks" class="task-item">
+      <div>
+        <h3>{{ task.title }}</h3>
+        <p>{{ task.description }}</p>
+        <small>Created at: {{ task.created_at }}</small>
+      </div>
+      <div class="task-actions">
+        <button (click)="editTask(task)" class="edit-btn">Edit</button>
+        <button (click)="deleteTask(task.id)" class="delete-btn">Delete</button>
+      </div>
+    </li>
+  </ul>
+
+  <ng-template #noTasks>
+    <p>No tasks has found.</p>
+  </ng-template>
+</div>
