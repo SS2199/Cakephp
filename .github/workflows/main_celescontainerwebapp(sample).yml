@@ -31,6 +31,8 @@ jobs:
         run: |
           cd public
           npm install -g @angular/cli
+          npm dedupe
+          npm uninstall rxjs
           npm install rxjs@latest
           npm install
 
