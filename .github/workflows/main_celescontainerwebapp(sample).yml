@@ -50,7 +50,7 @@ jobs:
 
       # Package for Deployment
       - name: Create deployment package
-        run: tar --exclude=node_modules --exclude=vendor --exclude=.git --exclude=.github -czf release.tar.gz .
+        run: tar --exclude=public/node_modules --exclude=vendor --exclude=.git --exclude=.github -czf release.tar.gz *
 
       - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
