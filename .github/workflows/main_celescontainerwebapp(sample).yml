@@ -14,13 +14,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Setup PHP for CakePHP backend
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
 
-      # Setup Node.js for Angular frontend
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -32,11 +30,9 @@ jobs:
       - name: Install Angular dependencies
         run: |
           cd public
-          rm -rf node_modules package-lock.json # Ensure clean install
-          npm cache clean --force
-          npm ci # Install exactly as per package-lock.json
-          npm list rxjs # Debug RxJS version
-          npx ng version # Debug Angular version
+          npm install -g @angular/cli
+          npm install rxjs@latest
+          npm install
 
       - name: Build Angular App
         run: |
@@ -44,10 +40,10 @@ jobs:
           NODE_OPTIONS="--max-old-space-size=4096" npx ng build 
 
       # Install Composer Dependencies for CakePHP
-      - name: Install PHP dependencies
+      - name: Install PHP dependencies if composer.json exists
         run: |
           if [ -f "composer.json" ]; then
-            composer install --prefer-dist --no-progress --no-dev --no-interaction
+            composer install --prefer-dist --no-progress --no-dev
           fi
 
       # Package for Deployment
