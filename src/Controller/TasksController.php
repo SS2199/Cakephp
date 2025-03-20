@@ -2,6 +2,9 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Exception\BadRequestException;
+use Cake\Http\Exception\MethodNotAllowedException;
 
 class TasksController extends AppController
 {
@@ -9,56 +12,101 @@ class TasksController extends AppController
     {
         parent::initialize();
         $this->loadComponent('RequestHandler');
-        $this->response = $this->response->withType('application/json');
     }
 
     public function index()
     {
         $tasks = $this->Tasks->find()->all();
-        $this->set(compact('tasks'));
-        $this->viewBuilder()->setOption('serialize', ['tasks']);
+        $this->set([
+            'tasks' => $tasks,
+            '_serialize' => ['tasks']
+        ]);
     }
 
     public function view($id = null)
     {
-        $task = $this->Tasks->get($id);
-        $this->set(compact('task'));
-        $this->viewBuilder()->setOption('serialize', ['task']);
+        if (!$id) {
+            throw new BadRequestException('Task ID is required.');
+        }
+
+        $task = $this->Tasks->findById($id)->first();
+        if (!$task) {
+            throw new NotFoundException('Task not found.');
+        }
+
+        $this->set([
+            'task' => $task,
+            '_serialize' => ['task']
+        ]);
     }
 
     public function add()
     {
         $this->request->allowMethod(['post']);
+
         $task = $this->Tasks->newEntity($this->request->getData());
         if ($this->Tasks->save($task)) {
-            $message = 'Task created';
+            $message = 'Task created successfully';
         } else {
             $message = 'Error creating task';
         }
-        $this->set(compact('task', 'message'));
-        $this->viewBuilder()->setOption('serialize', ['task', 'message']);
+
+        $this->set([
+            'task' => $task,
+            'message' => $message,
+            '_serialize' => ['task', 'message']
+        ]);
     }
 
     public function edit($id = null)
     {
         $this->request->allowMethod(['put']);
+
+        if (!$id) {
+            throw new BadRequestException('Task ID is required.');
+        }
+
         $task = $this->Tasks->get($id);
+        if (!$task) {
+            throw new NotFoundException('Task not found.');
+        }
+
         $task = $this->Tasks->patchEntity($task, $this->request->getData());
         if ($this->Tasks->save($task)) {
-            $message = 'Task updated';
+            $message = 'Task updated successfully';
         } else {
             $message = 'Error updating task';
         }
-        $this->set(compact('task', 'message'));
-        $this->viewBuilder()->setOption('serialize', ['task', 'message']);
+
+        $this->set([
+            'task' => $task,
+            'message' => $message,
+            '_serialize' => ['task', 'message']
+        ]);
     }
 
     public function delete($id = null)
     {
         $this->request->allowMethod(['delete']);
+
+        if (!$id) {
+            throw new BadRequestException('Task ID is required.');
+        }
+
         $task = $this->Tasks->get($id);
-        $message = $this->Tasks->delete($task) ? 'Task deleted' : 'Error deleting task';
-        $this->set(compact('message'));
-        $this->viewBuilder()->setOption('serialize', ['message']);
+        if (!$task) {
+            throw new NotFoundException('Task not found.');
+        }
+
+        if ($this->Tasks->delete($task)) {
+            $message = 'Task deleted successfully';
+        } else {
+            $message = 'Error deleting task';
+        }
+
+        $this->set([
+            'message' => $message,
+            '_serialize' => ['message']
+        ]);
     }
 }

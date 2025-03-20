@@ -3,41 +3,25 @@ use Cake\Routing\RouteBuilder;
 use Cake\Routing\Router;
 use Cake\Routing\Route\DashedRoute;
 
-Router::defaultRouteClass(DashedRoute::class);
+return static function (RouteBuilder $routes): void {
+    // Set the default route class
+    $routes->setRouteClass(DashedRoute::class);
 
-Router::scope('/', function (RouteBuilder $routes) {
     // Enable JSON extension for all routes
     $routes->setExtensions(['json']);
 
-     // Define a route for displaying tasks (index action)
-     $routes->connect('/tasks', ['controller' => 'Tasks', 'action' => 'index']);
+    // Define homepage route (redirects to tasks index)
+    $routes->connect('/', ['controller' => 'Tasks', 'action' => 'index']);
 
-    // Define resource routes for Tasks
-    $routes->resources('Tasks', [
-        'map' => [
-            'index' => [
-                'action' => 'index',
-                'method' => 'GET'
-            ],
-            'view' => [
-                'action' => 'view',
-                'method' => 'GET'
-            ],
-            'add' => [
-                'action' => 'add',
-                'method' => 'POST'
-            ],
-            'edit' => [
-                'action' => 'edit',
-                'method' => 'PUT'
-            ],
-            'delete' => [
-                'action' => 'delete',
-                'method' => 'DELETE'
-            ]
-        ]
-    ]);
+    // Define RESTful routes for Tasks
+    $routes->scope('/tasks', function (RouteBuilder $builder) {
+        $builder->connect('/', ['controller' => 'Tasks', 'action' => 'index', '_method' => 'GET']);
+        $builder->connect('/:id', ['controller' => 'Tasks', 'action' => 'view'], ['pass' => ['id'], 'id' => '\d+', '_method' => 'GET']);
+        $builder->connect('/', ['controller' => 'Tasks', 'action' => 'add', '_method' => 'POST']);
+        $builder->connect('/:id', ['controller' => 'Tasks', 'action' => 'edit'], ['pass' => ['id'], 'id' => '\d+', '_method' => 'PUT']);
+        $builder->connect('/:id', ['controller' => 'Tasks', 'action' => 'delete'], ['pass' => ['id'], 'id' => '\d+', '_method' => 'DELETE']);
+    });
 
-    // Fallback for other routes
+    // Fallback routes
     $routes->fallbacks(DashedRoute::class);
-});
+};
