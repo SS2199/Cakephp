@@ -1,12 +1,16 @@
 <?php
 use Cake\Routing\RouteBuilder;
 use Cake\Routing\Router;
+use Cake\Routing\Route\DashedRoute;
 
-Router::defaultRouteClass('DashedRoute');
+Router::defaultRouteClass(DashedRoute::class);
 
 Router::scope('/', function (RouteBuilder $routes) {
     // Enable JSON extension for all routes
     $routes->setExtensions(['json']);
+
+     // Define a route for displaying tasks (index action)
+     $routes->connect('/tasks', ['controller' => 'Tasks', 'action' => 'index']);
 
     // Define resource routes for Tasks
     $routes->resources('Tasks', [
@@ -35,5 +39,5 @@ Router::scope('/', function (RouteBuilder $routes) {
     ]);
 
     // Fallback for other routes
-    $routes->fallbacks('DashedRoute');
+    $routes->fallbacks(DashedRoute::class);
 });
