@@ -34,12 +34,12 @@ jobs:
       - name: Install Angular dependencies
         run: |
           cd public
-          npm ci  # Installs exact versions from package-lock.json
-          npm dedupe  # Removes duplicate dependencies
+          npm ci
+          npm dedupe
           npx ng build --configuration production --output-path=dist
 
       # Install PHP Dependencies
-      - name: Install PHP dependencies if composer.json exists
+      - name: Install PHP dependencies
         run: |
           if [ -f "composer.json" ]; then
             composer install --prefer-dist --no-progress --no-dev
@@ -47,7 +47,7 @@ jobs:
 
       # Package for Deployment (Excluding Unnecessary Files)
       - name: Create deployment package
-        run: tar --exclude=public/node_modules --exclude=vendor --exclude=.git --exclude=.github -czf release.tar.gz *
+        run: tar --exclude=public/node_modules --exclude=vendor --exclude=.git --exclude=.github -czf release.tar.gz .
 
       - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
@@ -68,11 +68,18 @@ jobs:
         with:
           name: php-angular-app
 
+      - name: Extract artifact
+        run: tar -xzf release.tar.gz -C $GITHUB_WORKSPACE
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'celescontainerwebapp'
-          package: release.tar.gz
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_9CA6874FDA9A4C86A3F34CE999A86269 }}
-          verbose: true
+          package: $GITHUB_WORKSPACE  # Deploys the extracted files
+
+      # Ensure PHP dependencies are installed on Azure
+      - name: Install Composer Dependencies on Azure
+        run: |
+          ssh -o StrictHostKeyChecking=no azureuser@your-server-ip 'cd /home/site/wwwroot && composer install --no-dev --optimize-autoloader'
