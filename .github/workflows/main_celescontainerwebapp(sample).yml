@@ -45,9 +45,10 @@ jobs:
             composer install --prefer-dist --no-progress --no-dev
           fi
 
+      # Package for Deployment (Excluding Unnecessary Files)
       - name: Create deployment package
         run: zip -r release.zip * -x "public/node_modules/*" "vendor/*" ".git/*" ".github/*"
-        
+
       - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
         with:
@@ -71,7 +72,7 @@ jobs:
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
-            app-name: 'celescontainerwebapp'
-            package: release.zip
-            publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_9CA6874FDA9A4C86A3F34CE999A86269 }}
-        
+          app-name: 'celescontainerwebapp'
+          package: release.zip
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_9CA6874FDA9A4C86A3F34CE999A86269 }}
+         
