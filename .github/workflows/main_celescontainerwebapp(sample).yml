@@ -36,7 +36,8 @@ jobs:
           cd public
           npm ci  # Installs exact versions from package-lock.json
           npm dedupe  # Removes duplicate dependencies
-          npx ng build --configuration production --output-path=dist
+          npm run build --configuration sample --output-path=dist
+          ls -l dist/
 
       # Install PHP Dependencies
       - name: Install PHP dependencies if composer.json exists
