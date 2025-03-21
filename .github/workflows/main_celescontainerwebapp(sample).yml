@@ -14,11 +14,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # Setup PHP
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
+          extensions: mbstring, intl, pdo, pdo_pgsql
+          tools: composer:v2
 
+      # Setup Node.js for Angular
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -26,29 +30,22 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'public/package-lock.json'
 
-      # Install and Build Angular Frontend
+      # Install Angular dependencies
       - name: Install Angular dependencies
         run: |
           cd public
-          npm install -g @angular/cli
-          npm dedupe
-          npm uninstall rxjs
-          npm install rxjs@latest
-          npm install
+          npm ci  # Installs exact versions from package-lock.json
+          npm dedupe  # Removes duplicate dependencies
+          npx ng build --configuration production --output-path=dist
 
-      - name: Build Angular App
-        run: |
-          cd public
-          NODE_OPTIONS="--max-old-space-size=4096" npx ng build 
-
-      # Install Composer Dependencies for CakePHP
+      # Install PHP Dependencies
       - name: Install PHP dependencies if composer.json exists
         run: |
           if [ -f "composer.json" ]; then
             composer install --prefer-dist --no-progress --no-dev
           fi
 
-      # Package for Deployment
+      # Package for Deployment (Excluding Unnecessary Files)
       - name: Create deployment package
         run: tar --exclude=public/node_modules --exclude=vendor --exclude=.git --exclude=.github -czf release.tar.gz *
 
@@ -71,14 +68,11 @@ jobs:
         with:
           name: php-angular-app
 
-      - name: Unzip artifact for deployment
-        run: tar -xzf release.tar.gz
-
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'celescontainerwebapp'
-          package: .
+          package: release.tar.gz
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_9CA6874FDA9A4C86A3F34CE999A86269 }}
           verbose: true
